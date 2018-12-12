@@ -1,19 +1,23 @@
 import os
-import numpy as np
+
 import tensorflow as tf
-from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 import cv2
+from PIL import Image, ImageDraw, ImageFont
+from convert_classes import read_label_map,get_class_item
 from keras import backend as K
+from object_detection.utils import label_map_util
 from tensorflow.image import ResizeMethod
 from tensorflow.python.framework import graph_util
 from tensorflow.python.platform import gfile
 from tensorflow.python.tools import optimize_for_inference_lib
-from object_detection.utils import label_map_util
-import colorsys
-from timeit import default_timer as timer
 from yolo3 import utils
-from convert_classes import read_json
+
+import colorsys
 from distutils.version import StrictVersion
+from timeit import default_timer as timer
+
+
 if StrictVersion(tf.__version__) < StrictVersion('1.9.0'):
     raise ImportError(
         'Please upgrade your TensorFlow installation to v1.9.* or later!')
@@ -54,7 +58,7 @@ def detect(sess, image, get_input, get_output):
                            feed_dict={get_input["input_1"]: image})
     end = timer()
     print("detect time %s s" % (end - start))
-
+    #print(output_dict)
     return output_dict
 
 
@@ -118,11 +122,11 @@ def write_unity_interface_meta(sess, meta_output_folder, meta_output_file_name):
                          meta_output_folder, meta_output_file_name+'.pb')
 
 
-def generate_colors(class_names):
+def generate_colors(class_num):
     import colorsys
     # Generate colors for drawing bounding boxes.
-    hsv_tuples = [(x / len(class_names), 1., 1.)
-                  for x in range(len(class_names))]
+    hsv_tuples = [(x / class_num, 1., 1.)
+                  for x in range(class_num)]
     colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
     colors = list(
         map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), colors))
@@ -135,7 +139,7 @@ def generate_colors(class_names):
 
 def get_class(classes_path_raw):
     # return label_map_util.create_category_index_from_labelmap(classes_path_raw, use_display_name=True)
-    return read_json(classes_path_raw)
+    return read_label_map(classes_path_raw)
 
 
 def tf_image_resize(target_size, image):
@@ -172,10 +176,10 @@ def pil_image_resize(target_size, image):
     return utils.letterbox_image(image, tuple(reversed(target_size)))
 
 
-def cv2_letterbox_image(img_path, size):
+def cv2_letterbox_image(im, size):
     '''resize image with unchanged aspect ratio using padding'''
 
-    im = cv2.imread(img_path)
+    #im = cv2.imread(img_path)
     old_size = im.shape[:2]  # old_size is in (height, width) format
     ratio_w = float(size[1])/old_size[1]
     ratio_h = float(size[0])/old_size[0]
@@ -193,18 +197,19 @@ def cv2_letterbox_image(img_path, size):
     return new_image
 
 
-def _draw(image, class_names, colors, draw_score_threshold, out_boxes, out_scores, out_classes):
+def _draw(image, class_names,class_names_type, colors, draw_score_threshold, out_boxes, out_scores, out_classes):
 
     font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
     thickness = (image.size[0] + image.size[1]) // 300
-
+    
     for i, c in enumerate(out_classes):
-        predicted_class = class_names[str(c)]
+        
+        index,predicted_class = get_class_item(class_names,c,class_names_type)
         box = out_boxes[i]
         score = out_scores[i]
 
-        label = '{} {:.2f}'.format(predicted_class, score)
+        label = '{} {:.2f}'.format(predicted_class["name"], score)
         draw = ImageDraw.Draw(image)
         label_size = draw.textsize(label, font)
 
@@ -225,16 +230,16 @@ def _draw(image, class_names, colors, draw_score_threshold, out_boxes, out_score
             for i in range(thickness):
                 draw.rectangle(
                     [left + i, top + i, right - i, bottom - i],
-                    outline=colors[c])
+                    outline=colors[c-1])
             draw.rectangle(
                 [tuple(text_origin), tuple(text_origin + label_size)],
-                fill=colors[c])
+                fill=colors[c-1])
             draw.text(text_origin, label, fill=(0, 0, 0), font=font)
             del draw
     return image
 
 
-def detect_image(sess, img_path, class_path, get_input, get_output, draw_score_threshold, force_image_resize, requiredshape32=False):
+def detect_image(sess, img_path,class_num, class_path,class_names_type, get_input, get_output, draw_score_threshold, force_image_resize, requiredshape32=False):
     image = Image.open(img_path)
     if requiredshape32:
         force_image_resize = check_multiples_32(force_image_resize, image)
@@ -245,16 +250,16 @@ def detect_image(sess, img_path, class_path, get_input, get_output, draw_score_t
     out_scores = output_dict["scores"]
     out_classes = output_dict["classes"]
     class_names = get_class(class_path)
-    colors = generate_colors(class_names)
-    image = _draw(image, class_names, colors, draw_score_threshold,
+    colors = generate_colors(class_num)
+    image = _draw(image, class_names,class_names_type, colors, draw_score_threshold,
                   out_boxes, out_scores, out_classes)
     image.show()
 
 
-def detect_video(sess, video_path, class_path, get_input, get_output, draw_score_threshold, force_image_resize, requiredshape32=False, output_path=""):
+def detect_video(sess, video_path,class_num, class_path,class_names_type, get_input, get_output, draw_score_threshold, force_image_resize, requiredshape32=False, output_path=""):
     vid = cv2.VideoCapture(video_path)
     class_names = get_class(class_path)
-    colors = generate_colors(class_names)
+    colors = generate_colors(class_num)
     if not vid.isOpened():
         raise IOError("Couldn't open webcam or video")
     video_FourCC = int(vid.get(cv2.CAP_PROP_FOURCC))
@@ -282,7 +287,7 @@ def detect_video(sess, video_path, class_path, get_input, get_output, draw_score
         out_scores = output_dict["scores"]
         out_classes = output_dict["classes"]
         image = _draw(
-            image, class_names, colors, draw_score_threshold, out_boxes, out_scores, out_classes)
+            image, class_names,class_names_type, colors, draw_score_threshold, out_boxes, out_scores, out_classes)
         result = np.asarray(image)
         curr_time = timer()
         exec_time = curr_time - prev_time

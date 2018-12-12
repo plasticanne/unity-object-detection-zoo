@@ -4,9 +4,11 @@ import os
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+from keras.layers import Input
 from keras.models import load_model
 from keras.utils import multi_gpu_model
-from yolo3.model import tiny_yolo_body, yolo_body, yolo_eval2
+from yolo3.model import tiny_yolo_body, yolo_body
+from utils_y import yolo_eval
 from utils import *
 
 
@@ -17,9 +19,6 @@ class YOLO(object):
         self.classes_num=classes_num
         self.anchors = self._get_anchors(anchors_path)
         
-        #self.sess = session
-
-    
 
     def _get_anchors(self, anchors_path_raw):
         anchors_path = os.path.expanduser(anchors_path_raw)
@@ -34,37 +33,25 @@ class YOLO(object):
             '.h5'), 'Keras model or weights must be a .h5 file.'
         # Load model, or construct model and load weights.
         num_anchors = len(self.anchors)
+        is_tiny_version = num_anchors == 6  # default setting
 
-
-        yolo_model = load_model(model_path, compile=False)
-        assert yolo_model.layers[-1].output_shape[-1] == \
+        try:
+            yolo_model = load_model(model_path, compile=False)
+        except:
+            yolo_model = tiny_yolo_body(Input(shape=(None, None, 3)), num_anchors//2, self.classes_num) \
+            if is_tiny_version else yolo_body(Input(shape=(None, None, 3)), num_anchors//3, self.classes_num)
+            # make sure model, anchors and classes match
+            yolo_model.load_weights(model_h5_path)
+        else:
+            assert yolo_model.layers[-1].output_shape[-1] == \
             num_anchors/len(yolo_model.output) * (self.classes_num + 5), \
             'Mismatch between model and given anchor and class sizes'
 
-
         if gpu_num >= 2:
             yolo_model = multi_gpu_model(yolo_model, gpus=gpu_num)
         self._generate_graph(yolo_model, self.classes_num,
                              model_score_threshold, iou_threshold)
        
-
-    def load_model_by_buider(self, weight_h5_path, model_score_threshold, iou_threshold, gpu_num):
-
-        # Load model, or construct model and load weights.
-        num_anchors = len(self.anchors)
-       
-
-        is_tiny_version = num_anchors == 6  # default setting
-
-        self.yolo_model = tiny_yolo_body(Input(shape=(None, None, 3)), num_anchors//2, self.classes_num) \
-            if is_tiny_version else yolo_body(Input(shape=(None, None, 3)), num_anchors//3, self.classes_num)
-        # make sure model, anchors and classes match
-        self.yolo_model.load_weights(weight_h5_path)
-
-        if gpu_num >= 2:
-            yolo_model = multi_gpu_model(yolo_model, gpus=gpu_num)
-        self._generate_graph(yolo_model, self.classes_num,
-                             model_score_threshold, iou_threshold)
 
     def _generate_graph(self, model_body, num_classes, model_score_threshold, iou_threshold):
         # Generate output tensor targets for filtered bounding boxes.
@@ -76,7 +63,7 @@ class YOLO(object):
         new_img_dims = tf.expand_dims(new_img, 0)
         out = model_body(new_img_dims)
     
-        boxes, scores, classes,num = yolo_eval2(out,
+        boxes, scores, classes,num = yolo_eval(out,
                                            self.anchors,
                                            num_classes,
                                            #self.input_0,
@@ -94,42 +81,41 @@ class YOLO(object):
 
 if __name__ == '__main__':
     # loading model from:
-    # 0: h5
-    # 1: freezed unity interface pb
-    # 2: blider & h5 weights
     model_load_from = 0
-    # args
-    MODEL_h5_path = 'model_data/yolo.h5'
-    MODEL_pb_path = 'model_data/freezed_coco_yolo.pb'
-    ANCHORS_path = 'model_data/yolo_anchors.txt'
-    CLASSES_path='model_data/coco_classes80.json'
-    CLASSES_num = 80
-    MODEL_weight_h5_path = ""
-    # classify score threshold, value will be fixed to output freezed
-    MODEL_score_threshold = 0.1
+    # 0: h5
+    MODEL_h5_path = 'logs/777/trained_weights_final.h5'
+    MODEL_score_threshold = 0.1 # classify score threshold, value will be fixed to output freezed
     IOU_threshold = 0.1  # yolo iou box filter, value will be fixed to output freezed
-    GPU_num = 1  # video cards count , cpu version or gpu version with counts will fixed after convert to pb graph
+    GPU_num = 1  # video cards count , cpu version or gpu version with counts will fixed after convert to pb
+    # 1: freezed unity interface pb
+    MODEL_pb_path = 'logs/freezed_coco_yolo.pb'
+    # args
+    ANCHORS_path = 'model_data/raccoon_anchors.txt'
+    CLASSES_path='model_data/raccoon_labels_map.pbtxt'
+    CLASSES_num = 1
+   
+
 
     # doing detection:
+    do_detect = 1
     # 0: no action
     # 1: img
+    IMG_path = 'dataset/raccoon/images/raccoon-1.jpg'
     # 2: video
-    do_detect = 1
-    # args
-    IMG_path = 'demo/car_cat.jpg'
     VIDEO_path = 'demo/Raccoon.mp4'
     OUTPUT_video = ""
+    # args   
     DRAW_score_threshold = 0.1  # score filter for draw boxes
-    # (height,width) 'Multiples of 32 required' , resize input to model
-    FORCE_image_resize = (128, 128)
+    FORCE_image_resize = (128, 128) # (height,width) 'Multiples of 32 required' , resize input to model
 
     # keras h5 convert to freezed graph output:
+    do_output_freezed_unity_interface = 0
     # 0: no action
     # 1: h5-->unity_interface freezed pb
-    do_output_freezed_unity_interface = 0
-    # args
-    OUTPUT_pb_path = "./model_data"
+    OUTPUT_pb_path = "./logs"
     OUTPUT_pb_file = "freezed_coco_yolo.pb"
+   
+    
 
 
 detection_graph = tf.Graph()
@@ -139,9 +125,9 @@ with detection_graph.as_default():
         model.load_model_by_h5(MODEL_h5_path, MODEL_score_threshold, IOU_threshold, GPU_num)
     elif model_load_from == 1:
         load_unity_interface_frozen_pb(MODEL_pb_path,CLASSES_num)
-    elif model_load_from == 2:
+    """elif model_load_from == 2:
         model=YOLO(CLASSES_num, ANCHORS_path)
-        model.load_model_by_buider(MODEL_weight_h5_path)
+        model.load_model_by_buider(MODEL_weight_h5_path,MODEL_score_threshold, IOU_threshold, GPU_num)"""
     with K.get_session() as sess:
         get_input,get_output=get_nodes(sess)
         if model_load_from == 0 and do_output_freezed_unity_interface == 1:
@@ -149,9 +135,9 @@ with detection_graph.as_default():
         else:
             print("no output pb")
         if do_detect == 1:
-            detect_image(sess,IMG_path,CLASSES_path,get_input,get_output,DRAW_score_threshold,FORCE_image_resize,True)
+            detect_image(sess,IMG_path,CLASSES_num,CLASSES_path,'index',get_input,get_output,DRAW_score_threshold,FORCE_image_resize,True)
         elif do_detect == 2:
-            detect_video(sess, VIDEO_path,CLASSES_path,get_input,get_output,DRAW_score_threshold,FORCE_image_resize,True, OUTPUT_video)
+            detect_video(sess, VIDEO_path,CLASSES_num,CLASSES_path,'index',get_input,get_output,DRAW_score_threshold,FORCE_image_resize,True, OUTPUT_video)
         else:
             print("no detect")
       

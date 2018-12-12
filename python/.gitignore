@@ -2,10 +2,7 @@
 *.h5
 *.pb
 logs/
-*_test.py
-TensorBoard/
 dataset/
-model_data/
 *.mp4
 # Byte-compiled / optimized / DLL files
 __pycache__/
