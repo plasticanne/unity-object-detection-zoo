@@ -5,7 +5,7 @@ import cv2
 import pandas as pd
 import tensorflow as tf
 from PIL import Image
-from convert_classes import read_label_map,get_class_item
+from tool_classes import read_label_map,get_class_item
 from object_detection.utils import dataset_util
 
 import argparse
@@ -57,13 +57,18 @@ def read_tf_record_test(path):
         for string_record in record_iterator:
             example.ParseFromString(string_record)
             dict=read_tf_record_info_each(example)
-            print(dict)
+            for k, v in dict.items():
+                print ('%s: %s'%(k,v))
+            print ('\n')
             image_encoded=read_tf_record_image_each(example)
             image=image_decode_jpeg(image_encoded)
-            image=cv2.rectangle(image, (int(dict["xmin"][0]*dict["width"][0]),int(dict["ymin"][0]*dict["height"][0])),  (int(dict["xmax"][0]*dict["width"][0]),int(dict["ymax"][0]*dict["height"][0])), (0, 255, 0), 2)
+            b,g,r = cv2.split(image)
+            image=cv2.merge([r,g,b])
+            for i,c in enumerate( list(dict["classes_label"])):
+                image=cv2.rectangle(image, (int(dict["xmin"][i]*dict["width"][0]),int(dict["ymin"][i]*dict["height"][0])),  (int(dict["xmax"][i]*dict["width"][0]),int(dict["ymax"][i]*dict["height"][0])), (0, 255, 0), 2)
             cv2.imshow("image", image)
             cv2.waitKey(0)
-            break
+            #break
 def image_decode_jpeg(image_encoded):
     #image_1d = np.fromstring(image_encoded, dtype=np.uint8)
     #image = image_1d.reshape((height, width, 3))
@@ -171,7 +176,7 @@ if __name__ == '__main__':
     help='input classes .pbtxt file')
     parser.add_argument(
     '--output', type=str,
-    default="dataset/raccoon/a.record",
+    default="dataset/raccoon/a2.record",
     help='output tf-recoed file')
     parser.add_argument(
     '--test', type=str,
@@ -180,8 +185,12 @@ if __name__ == '__main__':
     help='test a tf-recoed file')
     parser.add_argument(
     '--num_shards', type=int,
-    default=0,
-    help='test a tf-recoed file')
+    default=1,
+    help='how many tf-recoed files will be generated')
+    parser.add_argument(
+    '--num_pre_shards', type=int,
+    default=1000,
+    help='how many datas in every tf-recoed files')
 
     FLAGS = parser.parse_args()
     if FLAGS.test =="":
@@ -191,14 +200,22 @@ if __name__ == '__main__':
             examples = xml_to_PdDataFrame(FLAGS.input_annotations)
 
         grouped = split(examples, 'filename')
-        if FLAGS.num_shards==0:
+        if FLAGS.num_shards==1:
             with tf.python_io.TFRecordWriter(FLAGS.output) as f:
                 for group in grouped:
                     tf_example = create_tf_example(group, FLAGS.input_image,FLAGS.input_classes)
                     f.write(tf_example.SerializeToString())
-        elif FLAGS.num_shards>0:
-            """
-            import contextlib2
+        elif FLAGS.num_shards>1 and FLAGS.num_pre_shards>=1:
+            for i in range(FLAGS.num_shards):
+                file_name = FLAGS.output+'-{}-of-{}'.format(i,FLAGS.num_shards)
+                with tf.python_io.TFRecordWriter(file_name) as f:
+                    for j in range(FLAGS.num_pre_shards):
+                        tf_example = create_tf_example(grouped[i*FLAGS.num_pre_shards+j], FLAGS.input_image,FLAGS.input_classes)
+                        f.write(tf_example.SerializeToString())
+        else:
+            print('--num_shards must >= 1')
+
+            """import contextlib2
             from object_detection.dataset_tools import tf_record_creation_util
             with contextlib2.ExitStack() as tf_record_close_stack:
                 output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
@@ -206,7 +223,7 @@ if __name__ == '__main__':
             for index,group in enumerate(grouped):
                 tf_example = create_tf_example(group, FLAGS.input_image,FLAGS.input_classes)
                 output_shard_index = index % FLAGS.num_shards
-                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
-                """
+                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())"""
+                
     else: 
         read_tf_record_test(os.path.join(os.getcwd(),FLAGS.test))

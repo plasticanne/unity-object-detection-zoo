@@ -1,0 +1,1 @@
+./dataset/raccoon/images/raccoon-53.jpg 71,45,197,171,0

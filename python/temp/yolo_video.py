@@ -42,7 +42,7 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '--image', default=False, action="store_true",
+        '--image', default=True, action="store_true",
         help='Image detection mode, will ignore all positional arguments'
     )
     '''
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     parser.add_argument(
         "--input", nargs='?', type=str,required=False,
         #default='demo/boys.jpg',
-        #default='data/images/raccoon-1.jpg',
-        default='demo/raccoon.mp4',
+        default='data/images/raccoon-1.jpg',
+        #default='demo/raccoon.mp4',
         help = "Video input path"
     )
 

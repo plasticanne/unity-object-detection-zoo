@@ -100,7 +100,7 @@ if __name__ == '__main__':
     do_detect = 1
     # 0: no action
     # 1: img
-    IMG_path = 'dataset/raccoon/images/raccoon-1.jpg'
+    IMG_path = 'dataset/raccoon/images/raccoon-53.jpg'
     # 2: video
     VIDEO_path = 'demo/Raccoon.mp4'
     OUTPUT_video = ""
@@ -125,9 +125,6 @@ with detection_graph.as_default():
         model.load_model_by_h5(MODEL_h5_path, MODEL_score_threshold, IOU_threshold, GPU_num)
     elif model_load_from == 1:
         load_unity_interface_frozen_pb(MODEL_pb_path,CLASSES_num)
-    """elif model_load_from == 2:
-        model=YOLO(CLASSES_num, ANCHORS_path)
-        model.load_model_by_buider(MODEL_weight_h5_path,MODEL_score_threshold, IOU_threshold, GPU_num)"""
     with K.get_session() as sess:
         get_input,get_output=get_nodes(sess)
         if model_load_from == 0 and do_output_freezed_unity_interface == 1:

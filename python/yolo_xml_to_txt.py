@@ -1,7 +1,7 @@
 import os
 import glob
 import xml.etree.ElementTree as ET
-from convert_classes import read_label_map,get_class_item
+from tool_classes import read_label_map,get_class_item
 def get_class(classes_path_raw):
     # return label_map_util.create_category_index_from_labelmap(classes_path_raw, use_display_name=True)
     return read_label_map(classes_path_raw)
