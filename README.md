@@ -5,12 +5,12 @@ And those models can be used in [Unity](https://unity3d.com/).
 
 ## Workflow
 
-**[Python part](tree/master/python)**
+**[Python part](https://github.com/plasticanne/unity-object-detection-zoo/tree/master/python)**
 - Download orginal model.
 - Retrain model or just use it.
 - Convert the model to unity interface frozen model .pb file. 
 
 
-**[Unity part](tree/master/unity/object%20detection)**
+**[Unity part](https://github.com/plasticanne/unity-object-detection-zoo/tree/master/unity/object%20detection)**
 - Rename the .pb file to .bytes.
 - Enjoy it.
