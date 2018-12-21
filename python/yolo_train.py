@@ -13,6 +13,8 @@ from yolo3.model import preprocess_true_boxes
 from yolo3.utils import get_random_data
 from utils import pil_image_resize
 from utils_y import get_random_data_tf,create_tiny_model,create_model
+import tensorflow as tf
+print(tf.test.gpu_device_name())
 # dataset from
 dataset_from=0
 # 0: tf-records
@@ -34,14 +36,14 @@ VALID_ratio = 0.1
 
 # Train with frozen layers first, to get a stable loss.
 # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-do_pre_train=True
+do_pre_train=False
 PRE_epochs=50
 # Unfreeze and continue training, to fine-tune.
 # Train longer if the result is not good.
-do_train=True
+do_train=False
 EPOCHS=500
 # random test from dataset
-do_test=True
+do_test=False
 
 
 

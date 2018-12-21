@@ -17,7 +17,7 @@ class TF_ZOO(object):
 
     def load_model_by_tf_interface(self,pb_path,num_classes,score_threshold):
 
-        input_1 = tf.placeholder(shape=[None, None, 3], name="input_image_data", dtype=tf.uint8)
+        input_1 = tf.placeholder(shape=[None, None, 3], name="input_image", dtype=tf.uint8)
         new_img_dims = tf.expand_dims(input_1, 0)
         # Load a (frozen) Tensorflow model into memory
     
@@ -41,7 +41,7 @@ class TF_ZOO(object):
         num_detections= tf.cast(tensor_num[0],tf.int32)
         detection_scores=tensor_scores[0]
         detection_boxes = tensor_boxes[0]
-        detection_classes = tf.cast(tensor_classes[0],tf.uint8)
+        detection_classes = tf.cast(tensor_classes[0],tf.int32)
         #mask=tf.constant(detection_scores >= score_threshold,dtype=tf.bool,shape=detection_classes.get_shape())
         
         mask=detection_scores >= score_threshold
@@ -52,10 +52,10 @@ class TF_ZOO(object):
         num_=tf.shape(scores_)
         # all outputs are float32 numpy arrays, so convert types as appropriate
         output_nodes={}
-        output_nodes['num'] = tf.identity(num_, name="out_num")
-        output_nodes['classes'] = tf.identity(classes_, name="out_classes") 
-        output_nodes['boxes'] = tf.identity(boxes_, name="out_boxes") 
-        output_nodes['scores'] =tf.identity(scores_, name="out_scores") 
+        output_nodes['num'] = tf.identity(num_, name="output_num")
+        output_nodes['classes'] = tf.identity(classes_, name="output_classes") 
+        output_nodes['boxes'] = tf.identity(boxes_, name="output_boxes") 
+        output_nodes['scores'] =tf.identity(scores_, name="output_scores") 
 
     
 
@@ -66,43 +66,43 @@ class TF_ZOO(object):
 
 if __name__ == '__main__':
     # loading model from:
-    model_load_from = 0
+    model_load_from = 1
     # 0: freezed tf interface pb
-    #MODEL_tf_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb'
-    MODEL_tf_path = 'logs/training-gpu/saved_model/frozen_inference_graph.pb'
+    MODEL_tf_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb'
+    #MODEL_tf_path = 'logs/training-gpu/saved_model/frozen_inference_graph.pb'
     # classify score threshold, value will be fixed to output freezed
     MODEL_score_threshold = 0.1
     # 1: freezed unity interface pb
-    #MODEL_unity_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_unity_inference_graph.pb'
-    MODEL_unity_path = 'logs/training-gpu/saved_model/frozen_unity_inference_graph.pb'
+    MODEL_unity_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/freezed_coco_zoo.pb'
+    #MODEL_unity_path = 'logs/training-gpu/saved_model/frozen_unity_inference_graph.pb'
     
     # args
-    #CLASSES_path = 'object_detection/data/mscoco_label_map.pbtxt'
-    CLASSES_path = 'model_data/raccoon_labels_map.pbtxt'
+    CLASSES_path = 'object_detection/data/mscoco_label_map.pbtxt'
+    #CLASSES_path = 'model_data/raccoon_labels_map.pbtxt'
     #CLASSES_path='model_data/coco_classes90.json'
     CLASSES_num=1
     
    
 
     # doing detection:
-    do_detect = 2
+    do_detect = 1
     # 0: no action
     # 1: img
-    IMG_path = 'dataset/raccoon/images/raccoon-57.jpg'
-    #IMG_path = 'demo/boys.jpg'
+    #IMG_path = 'dataset/raccoon/images/raccoon-57.jpg'
+    IMG_path = 'demo/boys.jpg'
     # 2: video
     VIDEO_path = 'demo/Raccoon.mp4'
     OUTPUT_video = ""
     # args  
     DRAW_score_threshold = 0.5  # score filter for draw boxes
-    FORCE_image_resize = (300, 300) # (height,width) 
+    FORCE_image_resize = (416, 416) # (height,width) 
 
     # interface convert output:
     do_output_freezed_unity_interface = 0
     # 0: no action
     # 1: tf-->unity freezed interface pb
-    OUTPUT_pb_path = "logs/training-gpu/saved_model"
-    OUTPUT_pb_file = "frozen_unity_inference_graph.pb"
+    OUTPUT_pb_path = "logs/ssdlite_mobilenet_v2_coco_2018_05_09"
+    OUTPUT_pb_file = "freezed_coco_zoo.pb"
  
 
 
@@ -113,7 +113,7 @@ with detection_graph.as_default():
             model=TF_ZOO(CLASSES_num)
             model.load_model_by_tf_interface(MODEL_tf_path,CLASSES_num,MODEL_score_threshold)
         elif model_load_from == 1:
-            load_unity_interface_frozen_pb(MODEL_unity_path,CLASSES_num)
+            load_unity_interface_frozen_pb(MODEL_unity_path)
         with tf.Session() as sess:
             get_input,get_output=get_nodes(sess)
             if model_load_from == 0 and do_output_freezed_unity_interface == 1:

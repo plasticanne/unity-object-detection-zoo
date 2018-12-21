@@ -58,7 +58,7 @@ class YOLO(object):
         #self.input_0 = K.placeholder(
         #    shape=(2), name="return_box_shape", dtype="int32")
         self.input_1 = tf.placeholder(
-            shape=(None, None, 3), name="input_image_data",dtype="uint8")
+            shape=(None, None, 3), name="input_image",dtype="uint8")
         new_img = tf.cast(self.input_1, tf.float32) /255.
         new_img_dims = tf.expand_dims(new_img, 0)
         out = model_body(new_img_dims)
@@ -70,10 +70,10 @@ class YOLO(object):
                                            score_threshold=model_score_threshold,
                                            iou_threshold=iou_threshold)
         self.output_nodes={}
-        self.output_nodes['boxes'] = tf.identity(boxes, name="out_boxes")
-        self.output_nodes['scores'] = tf.identity(scores, name="out_scores")
-        self.output_nodes['classes'] = tf.identity(classes, name="out_classes")
-        self.output_nodes['num'] = tf.identity(num, name="out_num")
+        self.output_nodes['boxes'] = tf.identity(boxes, name="output_boxes")
+        self.output_nodes['scores'] = tf.identity(scores, name="output_scores")
+        self.output_nodes['classes'] = tf.identity(classes, name="output_classes")
+        self.output_nodes['num'] = tf.identity(num, name="output_num")
         
 
     
@@ -81,18 +81,18 @@ class YOLO(object):
 
 if __name__ == '__main__':
     # loading model from:
-    model_load_from = 0
+    model_load_from = 1
     # 0: h5
-    MODEL_h5_path = 'logs/777/trained_weights_final.h5'
+    MODEL_h5_path = 'model_data/yolov3.h5'
     MODEL_score_threshold = 0.1 # classify score threshold, value will be fixed to output freezed
     IOU_threshold = 0.1  # yolo iou box filter, value will be fixed to output freezed
     GPU_num = 1  # video cards count , cpu version or gpu version with counts will fixed after convert to pb
     # 1: freezed unity interface pb
     MODEL_pb_path = 'logs/freezed_coco_yolo.pb'
     # args
-    ANCHORS_path = 'model_data/raccoon_anchors.txt'
-    CLASSES_path='model_data/raccoon_labels_map.pbtxt'
-    CLASSES_num = 1
+    ANCHORS_path = 'model_data/yolov3_anchors.txt'
+    CLASSES_path='model_data/coco_labels_map.pbtxt'
+    CLASSES_num = 80
    
 
 
@@ -100,13 +100,13 @@ if __name__ == '__main__':
     do_detect = 1
     # 0: no action
     # 1: img
-    IMG_path = 'dataset/raccoon/images/raccoon-53.jpg'
+    IMG_path = 'demo/boys.jpg'
     # 2: video
     VIDEO_path = 'demo/Raccoon.mp4'
     OUTPUT_video = ""
     # args   
     DRAW_score_threshold = 0.1  # score filter for draw boxes
-    FORCE_image_resize = (128, 128) # (height,width) 'Multiples of 32 required' , resize input to model
+    FORCE_image_resize = (416, 416) # (height,width) 'Multiples of 32 required' , resize input to model
 
     # keras h5 convert to freezed graph output:
     do_output_freezed_unity_interface = 0
@@ -124,7 +124,7 @@ with detection_graph.as_default():
         model=YOLO(CLASSES_num, ANCHORS_path)
         model.load_model_by_h5(MODEL_h5_path, MODEL_score_threshold, IOU_threshold, GPU_num)
     elif model_load_from == 1:
-        load_unity_interface_frozen_pb(MODEL_pb_path,CLASSES_num)
+        load_unity_interface_frozen_pb(MODEL_pb_path)
     with K.get_session() as sess:
         get_input,get_output=get_nodes(sess)
         if model_load_from == 0 and do_output_freezed_unity_interface == 1:

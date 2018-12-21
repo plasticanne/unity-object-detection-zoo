@@ -32,11 +32,11 @@ def load_image_into_numpy_array(image):
 def get_nodes(sess):
     get_output = {}
     get_input = {}
-    get_input["input_1"] = sess.graph.get_tensor_by_name("input_image_data:0")
-    get_output["boxes"] = sess.graph.get_tensor_by_name("out_boxes:0")
-    get_output["scores"] = sess.graph.get_tensor_by_name("out_scores:0")
-    get_output["classes"] = sess.graph.get_tensor_by_name("out_classes:0")
-    get_output["num"] = sess.graph.get_tensor_by_name("out_num:0")
+    get_input["input_1"] = sess.graph.get_tensor_by_name("input_image:0")
+    get_output["boxes"] = sess.graph.get_tensor_by_name("output_boxes:0")
+    get_output["scores"] = sess.graph.get_tensor_by_name("output_scores:0")
+    get_output["classes"] = sess.graph.get_tensor_by_name("output_classes:0")
+    get_output["num"] = sess.graph.get_tensor_by_name("output_num:0")
     return get_input, get_output
 
 
@@ -52,13 +52,13 @@ def detect(sess, image, get_input, get_output):
     image = load_image_into_numpy_array(image)
     # the array based representation of the image will be used later in order to prepare the
     # result image with boxes and labels on it.
-
+    #print (image[64,64,:])
     start = timer()
     output_dict = sess.run(get_output,
                            feed_dict={get_input["input_1"]: image})
     end = timer()
     print("detect time %s s" % (end - start))
-    #print(output_dict)
+    print(output_dict)
     return output_dict
 
 
@@ -96,9 +96,10 @@ def write_unity_interface_frozen_pb(sess, output_pb_dir, output_pb_file, get_inp
     optimize_for_inference_lib.ensure_graph_is_valid(optimize_Graph)
     with tf.gfile.GFile(os.path.join(output_pb_dir, output_pb_file), "wb") as f:
         f.write(constant_graph.SerializeToString())
+        print("output unity interface frozen graph at "+os.path.join(output_pb_dir, output_pb_file))
 
 
-def load_unity_interface_frozen_pb(pb_path, num_classes):
+def load_unity_interface_frozen_pb(pb_path):
     with tf.gfile.GFile(pb_path, 'rb') as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())

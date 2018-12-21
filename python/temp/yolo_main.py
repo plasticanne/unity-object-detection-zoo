@@ -87,7 +87,7 @@ class YOLO(object):
         #self.input_0 = K.placeholder(
         #    shape=(2), name="return_box_shape", dtype="int32")
         self.input_1 = tf.placeholder(
-            shape=(None, None, 3), name="input_image_data",dtype="uint8")
+            shape=(None, None, 3), name="input_image",dtype="uint8")
         new_img = tf.cast(self.input_1, tf.float32) /255.
         new_img_dims = tf.expand_dims(new_img, 0)
         out = model_body(new_img_dims)
@@ -99,10 +99,10 @@ class YOLO(object):
                                            score_threshold=model_score_threshold,
                                            iou_threshold=iou_threshold)
         self.output_nodes={}
-        self.output_nodes['boxes'] = tf.identity(boxes, name="out_boxes")
-        self.output_nodes['scores'] = tf.identity(scores, name="out_scores")
-        self.output_nodes['classes'] = tf.identity(classes, name="out_classes")
-        self.output_nodes['num'] = tf.identity(num, name="out_num")
+        self.output_nodes['boxes'] = tf.identity(boxes, name="output_boxes")
+        self.output_nodes['scores'] = tf.identity(scores, name="output_scores")
+        self.output_nodes['classes'] = tf.identity(classes, name="output_classes")
+        self.output_nodes['num'] = tf.identity(num, name="output_num")
         
     def load_model_by_pb(self, model_pb_path):
         model_path = os.path.expanduser(model_pb_path)
@@ -157,11 +157,11 @@ class YOLO(object):
         #self.input_0 = self.sess.graph.get_tensor_by_name("return_box_shape:0")
         self.get_output={}
         self.get_input={}
-        self.get_input["input_1"] = self.sess.graph.get_tensor_by_name("input_image_data:0")
-        self.get_output["boxes"] = self.sess.graph.get_tensor_by_name("out_boxes:0")
-        self.get_output["scores"] = self.sess.graph.get_tensor_by_name("out_scores:0")
-        self.get_output["classes"] = self.sess.graph.get_tensor_by_name("out_classes:0")
-        self.get_output["num"] = self.sess.graph.get_tensor_by_name("out_num:0")
+        self.get_input["input_1"] = self.sess.graph.get_tensor_by_name("input_image:0")
+        self.get_output["boxes"] = self.sess.graph.get_tensor_by_name("output_boxes:0")
+        self.get_output["scores"] = self.sess.graph.get_tensor_by_name("output_scores:0")
+        self.get_output["classes"] = self.sess.graph.get_tensor_by_name("output_classes:0")
+        self.get_output["num"] = self.sess.graph.get_tensor_by_name("output_num:0")
     def load_image_into_numpy_array(self,image):
         (im_width, im_height) = image.size
         return np.array(image, dtype='float32').astype(np.uint8)

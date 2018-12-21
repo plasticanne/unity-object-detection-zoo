@@ -35,7 +35,7 @@ def load_image_into_numpy_array(image):
 
 def load_model_by_tf_interface(pb_path,num_classes,score_threshold):
 
-    input_1 = tf.placeholder(shape=[None, None, 3], name="input_image_data", dtype=tf.uint8)
+    input_1 = tf.placeholder(shape=[None, None, 3], name="input_image", dtype=tf.uint8)
     new_img_dims = tf.expand_dims(input_1, 0)
     # Load a (frozen) Tensorflow model into memory
     
@@ -64,10 +64,10 @@ def _generate_graph(score_threshold,num_classes):
     num_=tf.shape(scores_)
     # all outputs are float32 numpy arrays, so convert types as appropriate
     output_nodes={}
-    output_nodes['num'] = tf.identity(num_, name="out_num")
-    output_nodes['classes'] = tf.identity(classes_, name="out_classes") 
-    output_nodes['boxes'] = tf.identity(boxes_, name="out_boxes") 
-    output_nodes['scores'] =tf.identity(scores_, name="out_scores") 
+    output_nodes['num'] = tf.identity(num_, name="output_num")
+    output_nodes['classes'] = tf.identity(classes_, name="output_classes") 
+    output_nodes['boxes'] = tf.identity(boxes_, name="output_boxes") 
+    output_nodes['scores'] =tf.identity(scores_, name="output_scores") 
 
 def load_model_by_unity_interface(pb_path,num_classes):
     with tf.gfile.GFile(pb_path, 'rb') as f:
@@ -80,11 +80,11 @@ def load_model_by_unity_interface(pb_path,num_classes):
 def get_nodes(sess):
     get_output={}
     get_input={}
-    get_input["input_1"] = sess.graph.get_tensor_by_name("input_image_data:0")
-    get_output["boxes"] = sess.graph.get_tensor_by_name("out_boxes:0")
-    get_output["scores"] = sess.graph.get_tensor_by_name("out_scores:0")
-    get_output["classes"] = sess.graph.get_tensor_by_name("out_classes:0")
-    get_output["num"] = sess.graph.get_tensor_by_name("out_num:0")
+    get_input["input_1"] = sess.graph.get_tensor_by_name("input_image:0")
+    get_output["boxes"] = sess.graph.get_tensor_by_name("output_boxes:0")
+    get_output["scores"] = sess.graph.get_tensor_by_name("output_scores:0")
+    get_output["classes"] = sess.graph.get_tensor_by_name("output_classes:0")
+    get_output["num"] = sess.graph.get_tensor_by_name("output_num:0")
     return get_input,get_output
 def boxes_reversize(boxes,in_shape,out_shape):
     for box in boxes:
