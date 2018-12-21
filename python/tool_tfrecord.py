@@ -164,7 +164,6 @@ if __name__ == '__main__':
     parser.add_argument(
     '--input_annotations', type=str,
     default="dataset/raccoon/annotations",
-    #default="dataset/raccoon/data/raccoon_labels.csv",
     help='input path , "csv" for .csv file, "xml" for annotations folder contain all .xml ')
     parser.add_argument(
     '--input_image', type=str,
@@ -176,12 +175,11 @@ if __name__ == '__main__':
     help='input classes .pbtxt file')
     parser.add_argument(
     '--output', type=str,
-    default="dataset/raccoon/a2.record",
+    default="dataset/raccoon/raccoon.record",
     help='output tf-recoed file')
     parser.add_argument(
     '--test', type=str,
     default="",
-    #default="dataset/raccoon/a.record",
     help='test a tf-recoed file')
     parser.add_argument(
     '--num_shards', type=int,

@@ -88,7 +88,7 @@ if __name__ == '__main__':
     IOU_threshold = 0.1  # yolo iou box filter, value will be fixed to output freezed
     GPU_num = 1  # video cards count , cpu version or gpu version with counts will fixed after convert to pb
     # 1: freezed unity interface pb
-    MODEL_pb_path = 'logs/freezed_coco_yolo.pb'
+    MODEL_pb_path = 'output/freezed_coco_yolo.pb'
     # args
     ANCHORS_path = 'model_data/yolov3_anchors.txt'
     CLASSES_path='model_data/coco_labels_map.pbtxt'
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     do_output_freezed_unity_interface = 0
     # 0: no action
     # 1: h5-->unity_interface freezed pb
-    OUTPUT_pb_path = "./logs"
+    OUTPUT_pb_path = "output"
     OUTPUT_pb_file = "freezed_coco_yolo.pb"
    
     

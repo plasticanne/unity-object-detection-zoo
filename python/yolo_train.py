@@ -26,24 +26,23 @@ ANNOTATIONS_test ="model_data/raccoon_annotations.txt"
 
 # args
 WEIGHT_from='model_data/raccoon.h5'
-#WEIGHT_from='logs/777/trained_weights_final.h5'
-OUTPUT_train_dir = 'logs/777'
+OUTPUT_train_dir = 'output'
 NUM_classes=1
 ANCHORS_path = 'model_data/raccoon_anchors.txt'
-INPUT_shape =(64,64) # multiple of 32, (height,width)
+INPUT_shape =(416,416) # multiple of 32, (height,width)
 BATCH_size = 2
 VALID_ratio = 0.1
 
 # Train with frozen layers first, to get a stable loss.
 # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-do_pre_train=False
+do_pre_train=True
 PRE_epochs=50
 # Unfreeze and continue training, to fine-tune.
 # Train longer if the result is not good.
-do_train=False
+do_train=True
 EPOCHS=500
 # random test from dataset
-do_test=False
+do_test=True
 
 
 

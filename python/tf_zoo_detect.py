@@ -68,18 +68,14 @@ if __name__ == '__main__':
     # loading model from:
     model_load_from = 1
     # 0: freezed tf interface pb
-    MODEL_tf_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb'
-    #MODEL_tf_path = 'logs/training-gpu/saved_model/frozen_inference_graph.pb'
+    MODEL_tf_path = 'ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb'
     # classify score threshold, value will be fixed to output freezed
     MODEL_score_threshold = 0.1
     # 1: freezed unity interface pb
-    MODEL_unity_path = 'logs/ssdlite_mobilenet_v2_coco_2018_05_09/freezed_coco_zoo.pb'
-    #MODEL_unity_path = 'logs/training-gpu/saved_model/frozen_unity_inference_graph.pb'
+    MODEL_unity_path = 'ssdlite_mobilenet_v2_coco_2018_05_09/freezed_coco_zoo.pb'
     
     # args
     CLASSES_path = 'object_detection/data/mscoco_label_map.pbtxt'
-    #CLASSES_path = 'model_data/raccoon_labels_map.pbtxt'
-    #CLASSES_path='model_data/coco_classes90.json'
     CLASSES_num=1
     
    
@@ -88,7 +84,6 @@ if __name__ == '__main__':
     do_detect = 1
     # 0: no action
     # 1: img
-    #IMG_path = 'dataset/raccoon/images/raccoon-57.jpg'
     IMG_path = 'demo/boys.jpg'
     # 2: video
     VIDEO_path = 'demo/Raccoon.mp4'
@@ -101,7 +96,7 @@ if __name__ == '__main__':
     do_output_freezed_unity_interface = 0
     # 0: no action
     # 1: tf-->unity freezed interface pb
-    OUTPUT_pb_path = "logs/ssdlite_mobilenet_v2_coco_2018_05_09"
+    OUTPUT_pb_path = "output"
     OUTPUT_pb_file = "freezed_coco_zoo.pb"
  
 

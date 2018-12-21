@@ -14,7 +14,7 @@ tf.test.gpu_device_name()
 
 FLAGS.logtostderr=True
 FLAGS.checkpoint_dir="logs/training-gpu/"
-FLAGS.pipeline_config_path="logs/ssdlite_mobilenet_v2_raccoon.config"
+FLAGS.pipeline_config_path="ssdlite_mobilenet_v2_raccoon.config"
 
 
 

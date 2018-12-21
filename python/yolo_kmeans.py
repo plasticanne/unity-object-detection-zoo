@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     # args
     LEN_anchors = 6
-    OUTPUT_anchors='model_data/raccoon_anchors2.txt'
+    OUTPUT_anchors='model_data/raccoon_anchors-tiny.txt'
 
 
     kmeans = YOLO_Kmeans(LEN_anchors)

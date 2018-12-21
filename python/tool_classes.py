@@ -75,27 +75,22 @@ def write_label_map(datas,out_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Classes formet converter between "classes_lines","label_map","json".')
     parser.add_argument(
-    '--in_formet', type=str,#required=True,
+    '--in_formet', type=str,required=True,
     default="classes_lines",
     help='input format: "classes_lines","label_map","json" ')
     parser.add_argument(
-    '--out_formet',type=str,#required=True,
+    '--out_formet',type=str,required=True,
     default="label_map",
     help='output format: "classes_lines","label_map","json"')
     parser.add_argument(
     '--input',  
-    #default="model_data/coco_label_map.pbtxt",
     default="model_data/coco_classes80.txt",
-    #default="object_detection/data/mscoco_label_map.pbtxt",
-    type=str,#required=True,
+    type=str,required=True,
     help='input file')
     parser.add_argument(
     '--output',  
-    #default="model_data/coco_classes80.txt",
     default="model_data/coco_label_map.pbtxt",
-    #default="model_data/coco_classes80.json",
-    #default="model_data/coco_classes90.json",
-    type=str,#required=True,
+    type=str,required=True,
     help='output file')
     FLAGS = parser.parse_args()
     read = {
