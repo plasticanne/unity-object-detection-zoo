@@ -58,7 +58,7 @@ def detect(sess, image, get_input, get_output):
                            feed_dict={get_input["input_1"]: image})
     end = timer()
     print("detect time %s s" % (end - start))
-    print(output_dict)
+    #print(output_dict)
     return output_dict
 
 

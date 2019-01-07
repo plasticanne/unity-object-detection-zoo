@@ -81,18 +81,18 @@ class YOLO(object):
 
 if __name__ == '__main__':
     # loading model from:
-    model_load_from = 1
+    model_load_from = 0
     # 0: h5
-    MODEL_h5_path = 'model_data/yolov3.h5'
+    MODEL_h5_path = 'logs/gaze-tiny.h5'
     MODEL_score_threshold = 0.1 # classify score threshold, value will be fixed to output freezed
     IOU_threshold = 0.1  # yolo iou box filter, value will be fixed to output freezed
     GPU_num = 1  # video cards count , cpu version or gpu version with counts will fixed after convert to pb
     # 1: freezed unity interface pb
-    MODEL_pb_path = 'output/freezed_coco_yolo.pb'
+    MODEL_pb_path = 'output/freezed_coco_yolo-tiny.pb'
     # args
-    ANCHORS_path = 'model_data/yolov3_anchors.txt'
-    CLASSES_path='model_data/coco_labels_map.pbtxt'
-    CLASSES_num = 80
+    ANCHORS_path = 'logs/gaze_anchors-tiny.txt'
+    CLASSES_path='logs/gaze_labels_map.pbtxt'
+    CLASSES_num = 1
    
 
 
@@ -100,20 +100,20 @@ if __name__ == '__main__':
     do_detect = 1
     # 0: no action
     # 1: img
-    IMG_path = 'demo/boys.jpg'
+    IMG_path = 'D:\\winpython\\py36\\work\\dataset\\data\\t\\000\\000_00046_.jpg'
     # 2: video
     VIDEO_path = 'demo/Raccoon.mp4'
     OUTPUT_video = ""
     # args   
     DRAW_score_threshold = 0.1  # score filter for draw boxes
-    FORCE_image_resize = (416, 416) # (height,width) 'Multiples of 32 required' , resize input to model
+    FORCE_image_resize = (640, 640) # (height,width) 'Multiples of 32 required' , resize input to model
 
     # keras h5 convert to freezed graph output:
     do_output_freezed_unity_interface = 0
     # 0: no action
     # 1: h5-->unity_interface freezed pb
     OUTPUT_pb_path = "output"
-    OUTPUT_pb_file = "freezed_coco_yolo.pb"
+    OUTPUT_pb_file = "freezed_coco_yolo-tiny.pb"
    
     
 

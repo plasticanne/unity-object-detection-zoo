@@ -1,3 +1,5 @@
+# dataset format of  qqwweee/keras-yolo3(https://github.com/qqwweee/keras-yolo3)
+
 import os
 import glob
 import xml.etree.ElementTree as ET
@@ -20,11 +22,11 @@ def main(annotations_folder,images_folder,output_file,classes_path,label_offset)
         box_list = ""
         for member in root.findall('object'):
             box_list=box_list+' %s,%s,%s,%s,%s'%(
-                    int(member[4][0].text),
-                    int(member[4][1].text),
-                    int(member[4][2].text),
-                    int(member[4][3].text),
-                    get_class_index(class_list,member[0].text)+label_offset)
+                    int(member.find('bndbox').find('xmin').text),
+                    int(member.find('bndbox').find('ymin').text),
+                    int(member.find('bndbox').find('xmax').text),
+                    int(member.find('bndbox').find('ymax').text),
+                    get_class_index(class_list,member.find('name').text)+label_offset)
         txt='%s%s%s\n'%(txt,root_txt,box_list)
     list_file = open(output_file, 'w')
     list_file.write(txt)

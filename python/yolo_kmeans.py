@@ -130,15 +130,17 @@ class YOLO_Kmeans:
 
 if __name__ == "__main__":
     # data from
-    data_from=0
+    data_from=1
     # 0: tf-records
     RECORDS = ['dataset/raccoon/a.record']
     # 1: orginal txt file
-    ANNOTATIONS = "model_data/raccoon_annotations.txt"
+    #ANNOTATIONS = "model_data/raccoon_annotations.txt"
+    ANNOTATIONS = "dataset/new/annotations.txt"
 
     # args
     LEN_anchors = 6
-    OUTPUT_anchors='model_data/raccoon_anchors-tiny.txt'
+    #OUTPUT_anchors='model_data/raccoon_anchors-tiny.txt'
+    OUTPUT_anchors='dataset/new/anchors-tiny.txt'
 
 
     kmeans = YOLO_Kmeans(LEN_anchors)
